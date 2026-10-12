@@ -54,10 +54,12 @@ public class MainMenuManager : MonoBehaviour
         EnsureAIColorSprites();
         ResolveAIConfirmButton();
         EnsureAISettingPanelBorder();
+        ConfigureModeToggleGroup();
         BindButton(StartButton, OnStartButtonClicked);
         BindButton(SavedGamesButton, OnShowSavedGames);
         BindButton(ExitButton, OnExitGame);
         BindButton(AIConfirmButton, OnConfirmAISettings);
+        DisableSavedGamesButton();
 
         if (TwoPlayerToggle != null)
             TwoPlayerToggle.SetIsOnWithoutNotify(false);
@@ -101,10 +103,9 @@ public class MainMenuManager : MonoBehaviour
         if (!isOn)
             return;
 
-        // 只记录选择，不在 Toggle 切换时直接进游戏，避免打开面板时误进双人模式。
         IsAIMode = false;
-        if (AISettingsGroup != null)
-            AISettingsGroup.SetActive(false);
+        OpenSavedGamesOnStart = false;
+        SceneManager.LoadScene(GameSceneName);
     }
 
     public void OnAIToggleChanged(bool isOn)
@@ -252,17 +253,12 @@ public class MainMenuManager : MonoBehaviour
 
     public void OnStartButtonClicked()
     {
-        if (ModePanel != null && ModePanel.activeSelf && TwoPlayerToggle != null && TwoPlayerToggle.isOn)
-        {
-            OnStartGame();
-            return;
-        }
-
         ShowModePanel();
     }
 
     public void ShowModePanel()
     {
+        ConfigureModeToggleGroup();
         if (TwoPlayerToggle != null)
             TwoPlayerToggle.SetIsOnWithoutNotify(false);
         if (AIToggle != null)
@@ -273,6 +269,15 @@ public class MainMenuManager : MonoBehaviour
             AISettingsGroup.SetActive(false);
         SetAIColorSelection(true);
         SetModePanelVisible(true);
+    }
+
+    void ConfigureModeToggleGroup()
+    {
+        ToggleGroup modeToggleGroup = null;
+        if (ModeToggleGroup != null)
+            modeToggleGroup = ModeToggleGroup.GetComponent<ToggleGroup>();
+        if (modeToggleGroup != null)
+            modeToggleGroup.allowSwitchOff = true;
     }
 
     public void OnStartGame()
@@ -535,6 +540,16 @@ public class MainMenuManager : MonoBehaviour
     {
         OpenSavedGamesOnStart = true;
         SceneManager.LoadScene(GameSceneName);
+    }
+
+    void DisableSavedGamesButton()
+    {
+        if (SavedGamesButton != null)
+        {
+            if (SavedGamesButton.targetGraphic != null)
+                SavedGamesButton.targetGraphic.color = new Color(0.78f, 0.78f, 0.78f, 1f);
+            SavedGamesButton.interactable = false;
+        }
     }
 
     void OnExitGame()
